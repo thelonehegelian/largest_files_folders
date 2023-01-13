@@ -1,0 +1,7 @@
+[package]
+name = "larges_files"
+version = "0.1.0"
+authors = ["Rusty Hermit Developers"]
+
+
+[dependencies]
