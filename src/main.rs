@@ -28,5 +28,33 @@ fn main() {
         .spawn()
         .unwrap();
 
-    du_output_child.wait().unwrap();
+    if let Some(du_output) = du_output_child.stdout.take() {
+        let mut sort_output_child = Command::new("sort")
+            .arg("-hr")
+            .stdin(du_output)
+            .stdout(Stdio::piped())
+            .spawn()
+            .unwrap();
+
+        du_output_child.wait().unwrap();
+
+        if let Some(sort_output) = sort_output_child.stdout.take() {
+            let head_output_child = Command::new("head")
+                .args(&["-n", "10"])
+                .stdin(sort_output)
+                .stdout(Stdio::piped())
+                .spawn()
+                .unwrap();
+
+            let head_stdout = head_output_child.wait_with_output().unwrap();
+
+            sort_output_child.wait().unwrap();
+
+            println!(
+                "Top 10 biggest files and directories in '{}':\n{}",
+                current_dir.display(),
+                String::from_utf8(head_stdout.stdout).unwrap()
+            );
+        }
+    }
 }
